@@ -146,7 +146,7 @@ module.exports = function (socket,io,bt) {
         sendCurrentPlayer(socket.battleRoomId,io);
     });
 
-    socket.on('leave_battle',fuddaction () {
+    socket.on('leave_battle',function () {
 
         if(socket.battleRoomId)
         {
@@ -170,6 +170,19 @@ module.exports = function (socket,io,bt) {
             socket.leave(socket.battleRoomId);
             socket.battleRoomId = null;
         }
+    });
+
+    socket.on('health_pack',function(healAmount) {
+        var you = getYourself(socket);
+        if(you.monster.hp + healAmount <= you.monster.maxhp)
+        {
+            you.monster.hp = you.monster.hp + healAmount;
+        }
+        socket.broadcast.to(socket.battleRoomId).emit('opponent_healed');
+
+        //change turn
+        battles[socket.battleRoomId].currentPlayerTurn = swapCurrentPlayer(socket.battleRoomId);
+        sendCurrentPlayer(socket.battleRoomId,io);
     });
 
 };
