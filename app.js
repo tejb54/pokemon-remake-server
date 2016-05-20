@@ -5,7 +5,7 @@ var io = require('socket.io').listen(9058);
 var _ = require('lodash');
 
 var players = {};
-
+var battles = {};
 
 
 io.on('connection',function (socket) {
@@ -29,8 +29,6 @@ io.on('connection',function (socket) {
             {
                 socket.emit('spawn',item);
             }
-
-
         });
 
         //add player to the array for keeping tack of the players
@@ -58,6 +56,30 @@ io.on('connection',function (socket) {
             socket.broadcast.to(players[socket.id].room).emit('player-left',socket.id);
             _.unset(players,socket.id);
         }
+
+
+        //remove battle room if it exists for current player
+        if(socket.battleRoomId)
+        {
+            console.log('leaving battle room with id ' + socket.battleRoomId);
+            
+
+            //this needs to be fixed so that you only set room to null if all players have left
+            //if you are the last player to leave then destroy the room
+            if( battles[socket.battleRoomId].numPlayers <= 1){
+                console.log('removed battle room');
+                battles[socket.battleRoomId].numPlayers--;
+                battles[socket.battleRoomId] = null;
+            }
+            else
+            {
+                battles[socket.battleRoomId].numPlayers--;
+            }
+
+            //tell socket.io to leave the room
+            socket.leave(socket.battleRoomId);
+            socket.battleRoomId = null;
+        }
     });
 
     socket.on('interact', function (id) {
@@ -77,5 +99,5 @@ io.on('connection',function (socket) {
 
     });
 
-    require('./battle')(socket,io);
+    require('./battle')(socket,io,battles);
 });
