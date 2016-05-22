@@ -73,6 +73,8 @@ module.exports = function (socket,io,bt) {
         var battleRoomId = obj.battleId;
         socket.battleRoomId = obj.battleId;
 
+
+
         socket.join(battleRoomId);
 
         //if the room has not been created
@@ -80,6 +82,7 @@ module.exports = function (socket,io,bt) {
 
         if(!battles[battleRoomId])
         {
+            console.log('new room with id ' + battleRoomId);
             battles[battleRoomId] = new battle();
         }
         else
@@ -112,19 +115,17 @@ module.exports = function (socket,io,bt) {
 
         opponent.monster.hp = opponent.monster.hp - damage;
 
-        if(opponent.monster.hp > 0)
-        {
-            //update the hp for the other player
-            socket.broadcast.to(socket.battleRoomId).emit('take_damage',damage);
 
-            //update the hp for yourself;
-            socket.emit('opponent_take_damage',damage);
-        }
-        else
-        {
-            socket.broadcast.to(socket.battleRoomId).emit('monster_faint');
-        }
+        //update the hp for the other player
+        socket.broadcast.to(socket.battleRoomId).emit('take_damage',damage);
 
+        //update the hp for yourself;
+        socket.emit('opponent_take_damage',damage);
+
+        if(opponent.monster.hp <= 0){
+            opponent.monster.hp = 0;
+            //tell the players that the pokemon "died"
+        }
 
 
         battles[socket.battleRoomId].currentPlayerTurn = swapCurrentPlayer(socket.battleRoomId);
@@ -172,13 +173,16 @@ module.exports = function (socket,io,bt) {
         }
     });
 
-    socket.on('health_pack',function(healAmount) {
+    socket.on('health_pack_used',function(healAmount) {
+        console.log(socket.id + ' healed itself');
         var you = getYourself(socket);
-        if(you.monster.hp + healAmount <= you.monster.maxhp)
+        you.monster.hp = you.monster.hp + healAmount;
+
+        if(you.monster.hp < you.monster.maxhp)
         {
-            you.monster.hp = you.monster.hp + healAmount;
+            you.monster.hp = you.monster.maxhp;
         }
-        socket.broadcast.to(socket.battleRoomId).emit('opponent_healed');
+        socket.broadcast.to(socket.battleRoomId).emit('opponent_healed',healAmount);
 
         //change turn
         battles[socket.battleRoomId].currentPlayerTurn = swapCurrentPlayer(socket.battleRoomId);

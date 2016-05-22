@@ -3,6 +3,7 @@
  */
 var io = require('socket.io').listen(9058);
 var _ = require('lodash');
+var uuid = require('uuid');
 
 var players = {};
 var battles = {};
@@ -92,7 +93,10 @@ io.on('connection',function (socket) {
 
         if(data.res)
         {
-            var room = "battle_id";
+            //generate a random battle room id to be used.
+            var room = uuid.v4();
+
+            //send this id to the players
             socket.broadcast.to(data.id).emit('interact_response',room);
             socket.emit('interact_response',room);
         }
