@@ -63,7 +63,7 @@ io.on('connection',function (socket) {
         if(socket.battleRoomId)
         {
             console.log('leaving battle room with id ' + socket.battleRoomId);
-            
+            var num = battles[socket.battleRoomId].numPlayers;
 
             //this needs to be fixed so that you only set room to null if all players have left
             //if you are the last player to leave then destroy the room
@@ -75,6 +75,11 @@ io.on('connection',function (socket) {
             else
             {
                 battles[socket.battleRoomId].numPlayers--;
+            }
+
+            //tell socket.io to leave the room
+            if(num > 1){
+                socket.broadcast.to(socket.battleRoomId).emit('other-player-left');
             }
 
             //tell socket.io to leave the room

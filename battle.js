@@ -155,6 +155,8 @@ module.exports = function (socket,io,bt) {
             battles[socket.battleRoomId].currentPlayerTurn = swapCurrentPlayer(socket.battleRoomId);
             sendCurrentPlayer(socket.battleRoomId,io);
 
+            var num = battles[socket.battleRoomId].numPlayers;
+
             //this needs to be fixed so that you only set room to null if all players have left
             //if you are the last player to leave then destroy the room
             if( battles[socket.battleRoomId].numPlayers <= 1){
@@ -168,6 +170,11 @@ module.exports = function (socket,io,bt) {
             }
             
             //tell socket.io to leave the room
+            if(num > 1){
+                socket.broadcast.to(socket.battleRoomId).emit('other-player-left');
+            }
+
+
             socket.leave(socket.battleRoomId);
             socket.battleRoomId = null;
         }
