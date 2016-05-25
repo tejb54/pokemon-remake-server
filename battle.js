@@ -15,11 +15,12 @@ var monsterObj = function (name, hp, maxHp, level, type, defense) {
     this.defense = defense;
 };
 
-var playerObj = function (id,monster,alive,dead) {
+var playerObj = function (id,monster,alive,dead,n) {
     this.id = id; //id for this player
     this.monster = monster; //holds the current selected monster for this player
     this.alive = alive;
     this.dead = dead;
+    this.name = n;
 };
 
 var battle = function () {
@@ -78,7 +79,7 @@ module.exports = function (socket,io,bt) {
         socket.join(battleRoomId);
 
         //if the room has not been created
-        var NewPlayerObj = new playerObj(socket.id,obj.monster,obj.alive,obj.dead,obj.type,obj.defense);
+        var NewPlayerObj = new playerObj(socket.id,obj.monster,obj.alive,obj.dead,obj.type,obj.defense,obj.playerName);
 
         if(!battles[battleRoomId])
         {
