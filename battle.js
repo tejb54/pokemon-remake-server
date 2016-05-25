@@ -109,22 +109,28 @@ module.exports = function (socket,io,bt) {
         }
     });
 
-    socket.on('attack_battle',function (damage) {
+    socket.on('attack_battle',function (obj) {
 
         var opponent = getOpponent(socket);
+
+        var damage = obj.damage;
 
         opponent.monster.hp = opponent.monster.hp - damage;
 
 
         //update the hp for the other player
-        socket.broadcast.to(socket.battleRoomId).emit('take_damage',damage);
+        socket.broadcast.to(socket.battleRoomId).emit('take_damage',obj);
 
         //update the hp for yourself;
         socket.emit('opponent_take_damage',damage);
 
         if(opponent.monster.hp <= 0){
+            console.log('opponent fainted');
+
             opponent.monster.hp = 0;
             //tell the players that the pokemon "died"
+            socket.broadcast.to(socket.battleRoomId).emit('pokemon-fainted');
+            socket.emit('opponent-pokemon-fainted');
         }
 
 
@@ -192,8 +198,8 @@ module.exports = function (socket,io,bt) {
         socket.broadcast.to(socket.battleRoomId).emit('opponent_healed',healAmount);
 
         //change turn
-        battles[socket.battleRoomId].currentPlayerTurn = swapCurrentPlayer(socket.battleRoomId);
-        sendCurrentPlayer(socket.battleRoomId,io);
+        //battles[socket.battleRoomId].currentPlayerTurn = swapCurrentPlayer(socket.battleRoomId);
+        //sendCurrentPlayer(socket.battleRoomId,io);
     });
 
 };
