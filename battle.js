@@ -203,4 +203,12 @@ module.exports = function (socket,io,bt) {
         //sendCurrentPlayer(socket.battleRoomId,io);
     });
 
+    socket.on('change_turn', function () {
+        //change turn
+        console.log('change turn');
+
+        battles[socket.battleRoomId].currentPlayerTurn = swapCurrentPlayer(socket.battleRoomId);
+        sendCurrentPlayer(socket.battleRoomId,io);
+    });
+
 };

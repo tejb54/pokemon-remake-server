@@ -18,6 +18,8 @@ io.on('connection',function (socket) {
     socket.on('start',function (player) {
         player.id = socket.id;
 
+        console.log('start exploration mode from player ' + player.id);
+
         socket.join(player.room);
 
 
@@ -88,9 +90,14 @@ io.on('connection',function (socket) {
         }
     });
 
-    socket.on('interact', function (id) {
+    socket.on('interact', function (obj) {
+        var id = obj.id;
+
         console.log("interaction started by " + socket.id +" to " + id);
-        socket.broadcast.to(id).emit('interact_request',socket.id);
+        socket.broadcast.to(id).emit('interact_request',{
+            id: socket.id,
+            name: obj.name
+        });
     });
 
     socket.on('interact_response',function (data) {
